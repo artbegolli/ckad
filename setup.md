@@ -35,10 +35,27 @@ Copy and Paste
 Mark lines: Esc+V (then arrow keys)
 Copy marked lines: y
 Cut marked lines: d
-Past lines: p or P
+Paste lines: p or P
 ```
 
 ## Tmux
+
+### Installing Tmux
+
+```
+sudo apt-get install tmux
+```
+
+### Config Setup
+
+Create a tmux config file `vi ~/.tmux.conf`
+
+Include the following useful options:
+```
+set -g mouse on
+```
+
+### Commands
 
 Enter `ctrl+b` followed by subsequent commands in tmux:
 
@@ -49,22 +66,5 @@ Toggle layouts: space
 Swap panes: { and }
 Detach session: d
 List/Select windows: w (left right arrows to select panes)
+Scrolling: [ and then use the mouse
 ```
-
-For scrolling you have two options:
-
-Set mouse scroll:
-
-`ctrl+b` followed by `:` and then
-```
-setw -g mouse on
-
-or
-
-setw -g mode-mouse on
-```
-
-Alternatively you can scroll by 
-
-`ctrl+b` followed by `[`
-
