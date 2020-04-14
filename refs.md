@@ -4,8 +4,9 @@ This documents references documents and practice questions used for prep.
 
 ## Learning Resources
 
-* [Kube Docs]()
-* [Termainl](https://codeburst.io/the-ckad-browser-terminal-10fab2e8122e)
+* [Kube Docs](https://kubernetes.io/docs/)
+* [Terminal](https://codeburst.io/the-ckad-browser-terminal-10fab2e8122e)
+* [CKAD-Resources](https://github.com/lucassha/CKAD-resources)
 
 ## Practice Questions
 

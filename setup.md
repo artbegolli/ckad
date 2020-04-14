@@ -38,6 +38,19 @@ Cut marked lines: d
 Paste lines: p or P
 ```
 
+Movement
+```
+End of line: $
+Beginning of line: 0
+First non-blank character: ^
+Jump forward one line: j
+Jump forward ten lines 10j
+Jump back one line: k
+Jump back ten lines: 10k
+Jump to end: G
+Jump to beginning: 1G
+```
+
 ## Tmux
 
 ### Installing Tmux
