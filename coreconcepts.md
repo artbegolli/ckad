@@ -230,6 +230,11 @@ kubectl logs job/busybox
 kubectl explain job.spec
 ```
 
+*CronJobs*
+```
+kubectl create cronjob busybox --image=busybox --schedule="*/1 * * * *" -- /bin/sh -c 'date; echo Hello from the Kubernetes cluster'
+```
+
 ## Configuration
 
 ### ConfigMaps
@@ -560,3 +565,54 @@ k top nodes
 ```
 
 **metric-server must be running**
+
+## Services and Networking
+*Create a pod and expose*
+```
+kubectl run nginx --image=nginx --restart=Never --port 80 --expose
+```
+
+*Query service*
+```
+kubectl get svc nginx
+```
+
+*Query endpoints*
+```
+kubectl get ep
+```
+
+*Convert ClusterIP to NodePort*
+
+```
+kubectl edit svc nginx
+```
+
+Replace the type from `ClusterIP` to `NodePort`
+
+*Expose a deployment / Creating a service*
+```
+kubectl expose deployment foo --port=6201 --target-port=8080 --type=ClusterIP
+```
+
+*Creating a test pod*
+```
+kubectl run busybox --image=busybox -it --rm --restart=Never -- sh
+```
+
+*Create a network policy*
+```
+kind: NetworkPolicy
+apiVersion: networking.k8s.io/v1
+metadata:
+  name: access-nginx # pick a name
+spec:
+  podSelector:
+    matchLabels:
+      run: nginx # selector for the pods
+  ingress: # allow ingress traffic
+  - from:
+    - podSelector: # from pods
+        matchLabels: # with this label
+          access: granted
+```
