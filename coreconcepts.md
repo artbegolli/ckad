@@ -200,3 +200,363 @@ kubectl scale deploy nginx --replicas=5
 ```
 k autoscale deploy nginx --min=5 --max=10 --cpu-percent=80
 ```
+
+## Jobs
+
+*Create job*
+```
+kubectl create job hw --image=busybox -- echo hello;sleep 30;echo world
+```
+
+*Follow/Watch logs*
+```
+kubectl pod mypod -f
+```
+
+*Job logs*
+```
+kubectl logs job/busybox
+```
+
+*Parallel/completions/activeDeadlineSeconds*
+
+* If you want to run a job multiple time set the `completions` field
+
+* If you want to terminate a pod after a certain amount of time set the `activeDeadlineSeconds` field
+
+* If you want to run pods in parallel, set the `parallel` field
+
+```
+kubectl explain job.spec
+```
+
+## Configuration
+
+### ConfigMaps
+
+*Create from literal*
+```
+kubectl create configmap artsmap --from-literal=foo=lala --from-literal=foo2=lolo
+```
+
+*Create from file*
+```
+kubectl create configmap artsmap --from-file=hello.txt
+```
+
+*Create from file with key*
+```
+kubectl create configmap artsmap --from-file=mykey=hello.txt
+```
+
+*Create from env-file*
+```
+kubectl create configmap artsmap --from-env-file=foo=lala --from-literal=foo2=lolo
+```
+
+*Show configmap*
+```
+kubectl get cm configmap -o yaml
+```
+
+*Create a pod with loaded value from a configmap*
+
+```
+kubectl create cm --from-literal=val1=var1
+kubectl run nginx --image=nginx --restart=Never -o yaml --dry-run > nginx.yaml
+vi nginx.yaml
+```
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    env:
+      - name: option
+        valueFrom:
+          configMapKeyRef:
+            name: option
+            key: var1
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+*Create a pod with all env from a configmap*
+```
+kubectl create cm --from-literal=val1=var1
+kubectl run nginx --image=nginx --restart=Never -o yaml --dry-run > nginx.yaml
+vi nginx.yaml
+```
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    name: nginx
+    envFrom:
+      configMapRef:
+        - name: anotherone
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+*Create a pod with a mounted configmap*
+```
+kubectl create cm cmvolume --from-literal=var8=val8 --from-literal=var9=val9
+kubectl run nginxvol --image=nginx --restart=Never -o yaml --dry-run > nginxvol.yaml
+```
+
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginxvol
+  name: nginxvol
+spec:
+  volumes:
+    - name: myvol
+      configMap:
+        name: cmvolume
+  containers:
+  - image: nginx
+    name: nginxvol
+    resources: {}
+    volumeMounts:
+      - name: myvol
+        mountPath: /etc/lala
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+### Securtiy Context
+
+*Run as User with ID 101*
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginxsec
+  name: nginxsec
+spec:
+  securityContext:
+    runAsUser: 101
+  containers:
+  - image: nginx
+    name: nginxsec
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+*Running with capabilities*
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginxsec
+  name: nginxsec
+spec:
+  securityContext:
+    capabilities: 
+      add: ["NET_ADMIN", "SYS_TIME"]
+  containers:
+  - image: nginx
+    name: nginxsec
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+### Requests and Limits
+
+```
+kubectl run nginx --image=nginx --restart=Never --requests='cpu=100m,memory=256Mi' --limits='cpu=200m,memory=512Mi'
+```
+
+### Secrets
+*Create a secret*
+```
+kubectl create secret generic mysecret --from-literal=pw=mypassword
+```
+
+*Mount a secret*
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginxsec
+  name: nginxsec
+spec:
+  volumes:
+    - name: secvol
+      secret:
+        secretName: mysecret
+  containers:
+  - image: nginx
+    name: nginxsec
+    resources: {}
+    volumeMounts:
+      - name: secvol
+        mountPath: /etc/foo
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+*From env variable*
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    resources: {}
+    env: # our env variables
+    - name: USERNAME # asked name
+      valueFrom:
+        secretKeyRef: # secret reference
+          name: mysecret2 # our secret's name
+          key: username # the key of the data in the secret
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+### Service Accounts
+
+*Create*
+
+```
+kubectl create sa my-serviceaccount
+```
+
+*User service account*
+```
+kubectl run nginx --image=nginx --restart=Never --serviceaccount=myuser
+```
+OR
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  serviceAccountName: myuser # we use pod.spec.serviceAccountName
+  containers:
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    resources: {}
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+## Observability
+
+### Liveness and Readiness
+
+*Liveness with exec*
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    resources: {}
+    livenessProbe: 
+      initialDelaySeconds: 5 # add this line
+      periodSeconds: 5 # add this line as well
+      exec:
+        command:
+        - ls
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+*Readiness with httpGet*
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: nginx
+  name: nginx
+spec:
+  containers:
+  - image: nginx
+    imagePullPolicy: IfNotPresent
+    name: nginx
+    resources: {}
+    ports:
+      - containerPort: 80 # Note: Readiness probes runs on the container during its whole lifecycle. Since nginx exposes 80, containerPort: 80 is not required for readiness to work.
+    readinessProbe: # declare the readiness probe
+      httpGet: # add this line
+        path: / #
+        port: 80 #
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+status: {}
+```
+
+### Debugging
+
+*Delete w/o grace*
+```
+kubectl delete po busybox --force --grace-period=0
+```
+
+### Show resource usages
+```
+k top nodes
+```
+
+**metric-server must be running**
