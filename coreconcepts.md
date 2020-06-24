@@ -616,3 +616,79 @@ spec:
         matchLabels: # with this label
           access: granted
 ```
+
+
+## State Persistance
+
+*emptyDir*
+```
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: null
+  labels:
+    run: busybox
+  name: busybox
+spec:
+  dnsPolicy: ClusterFirst
+  restartPolicy: Never
+  containers:
+  - args:
+    - /bin/sh
+    - -c
+    - sleep 3600
+    image: busybox
+    imagePullPolicy: IfNotPresent
+    name: busybox
+    resources: {}
+    volumeMounts: #
+    - name: myvolume #
+      mountPath: /etc/foo #
+  - args:
+    - /bin/sh
+    - -c
+    - sleep 3600
+    image: busybox
+    name: busybox2
+    volumeMounts: #
+    - name: myvolume #
+      mountPath: /etc/foo #
+  volumes: #
+  - name: myvolume #
+    emptyDir: {} #
+```
+
+
+*Creating a persistent volumes*
+```
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: myvolume
+spec:
+  storageClassName: normal
+  capacity:
+    # THIS IS A MAP, REMEMBER THE STORAGE KEY
+    storage: 10Gi
+  accessModes:
+    - ReadWriteOnce
+    - ReadWriteMany
+  hostPath:
+    path: /etc/foo
+```
+
+*Creating a persistent volume claim*
+```
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mypvc
+spec:
+  storageClassName: normal
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      ## THIS IS A MAP, REMEMBER THIS KEY
+      storage: 10Gi
+```

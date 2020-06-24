@@ -51,6 +51,11 @@ Jump to end: G
 Jump to beginning: 1G
 ```
 
+Undo
+```
+normal mode: u
+```
+
 ## Tmux
 
 ### Installing Tmux
@@ -66,6 +71,15 @@ Create a tmux config file `vi ~/.tmux.conf`
 Include the following useful options:
 ```
 set -g mouse on
+```
+
+OR
+```
+ctrl+b :
+```
+then run 
+```
+set mouse on
 ```
 
 ### Commands
